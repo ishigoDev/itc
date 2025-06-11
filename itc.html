@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITC Interactive Scheme Poster & Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+        }
+        .view-switcher-btn {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #4b5563;
+        }
+        .view-switcher-btn.active {
+            color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        /* Poster Card Styles */
+        .poster-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .poster-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .poster-card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .poster-card-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .poster-card-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .poster-card-scheme {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+        .poster-card-cta {
+            margin-top: auto;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        /* --- Detailed Calculator Styles --- */
+        .tab-item { padding: 1rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; font-weight: 600; color: #6b7280; }
+        .tab-item:hover { color: #111827; }
+        #snacks-tab.tab-active { border-color: #ef4444; color: #ef4444; }
+        #biscuits-tab.tab-active { border-color: #3b82f6; color: #3b82f6; }
+        #confectionery-tab.tab-active { border-color: #f97316; color: #f97316; }
+        #juice-tab.tab-active { border-color: #8b5cf6; color: #8b5cf6; }
+        #staples-tab.tab-active { border-color: #16a34a; color: #16a34a; }
+        .table-header th { color: #ffffff; font-weight: 700; text-align: left; padding: 1rem 1.5rem; }
+        #snacks-content .table-header { background-color: #ef4444; }
+        #biscuits-content .table-header { background-color: #3b82f6; }
+        #confectionery-content .table-header { background-color: #f97316; }
+        #juice-content .table-header { background-color: #8b5cf6; }
+        #staples-content .table-header { background-color: #16a34a; }
+        .table-cell { padding: 1rem 1.5rem; text-align: left; vertical-align: middle; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+        .table-row:hover { background-color: #eef2ff; }
+        .input-quantity { width: 80px; padding: 8px; border: 1px solid #D1D5DB; border-radius: 6px; text-align: center; transition: border-color 0.2s; }
+        .input-quantity:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4); }
+        .calculated-value { font-weight: 600; }
+        .hidden { display: none; }
+        .main-header { background: linear-gradient(to right, #4f46e5, #9333ea); padding: 2rem 1rem; border-radius: 1rem; color: white; margin-bottom: 2rem; }
+        .image-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        .image-modal-overlay.visible { opacity: 1; pointer-events: auto; }
+        .image-modal-content { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); text-align: center; position: relative; transform: scale(0.95); transition: transform 0.3s ease; }
+        .image-modal-overlay.visible .image-modal-content { transform: scale(1); }
+        .image-modal-close-btn { position: absolute; top: -1rem; right: -1rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; background-color: #4f46e5; color: white; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; line-height: 1; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .view-image-btn { background-color: #4f46e5; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s; }
+        .view-image-btn:hover { background-color: #4338ca; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="main-header text-center shadow-lg">
+            <h1 class="text-4xl font-extrabold">ITC Retail Scheme Guide</h1>
+            <p class="text-lg text-indigo-200 mt-2">Your interactive guide to the best offers.</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md">
+            <!-- View Switcher -->
+            <div class="border-b border-gray-200 flex justify-center">
+                <button id="poster-view-btn" class="view-switcher-btn active">Poster</button>
+                <button id="calculator-view-btn" class="view-switcher-btn">Calculator</button>
+            </div>
+
+            <!-- Poster View -->
+            <div id="poster-view">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-8">
+                    <!-- Poster cards will be injected here -->
+                </div>
+            </div>
+
+            <!-- Calculator View -->
+            <div id="calculator-view" class="hidden">
+                 <div class="border-b border-gray-200">
+                    <nav class="flex flex-wrap -mb-px" id="tabs">
+                        <a id="snacks-tab" class="tab-item tab-active" data-tab="snacks">Snacks</a>
+                        <a id="biscuits-tab" class="tab-item" data-tab="biscuits">Biscuits</a>
+                        <a id="confectionery-tab" class="tab-item" data-tab="confectionery">Confectionery</a>
+                        <a id="juice-tab" class="tab-item" data-tab="juice">Juice</a>
+                        <a id="staples-tab" class="tab-item" data-tab="staples">Staples</a>
+                    </nav>
+                </div>
+                <div id="tab-content" class="p-4">
+                    <!-- Detailed calculator tables will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Modal Structure -->
+    <div id="image-modal" class="image-modal-overlay">
+        <div class="image-modal-content">
+            <button id="modal-close-button" class="image-modal-close-btn">&times;</button>
+            <img id="modal-image" src="" alt="Product Image" class="max-w-xs md:max-w-sm rounded-lg">
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data and constants
+        const placeholderImg = 'https://placehold.co/150x150/E2E8F0/4A5568?text=Image+Not+Found';
+        const products = [
+            // Snacks
+            { category: 'snacks', name: 'Tedhe Medhe (5Rs)', mrp: 5, ptr: 4.4, schemes: [{ qty: 240, discount: 0.0175, text: '240pcs - 1.75%'}, { qty: 60, discount: 0.0075, text: '60pcs - 0.75%' }], image: 'https://rukminim2.flixcart.com/image/850/1000/k6gsk280/snack-savourie/g/h/h/208-tedhe-medhe-masala-tadka-namkeen-pouch-bingo-original-imafzxz3z4h9zrfh.jpeg?q=90&crop=false' },
+            { category: 'snacks', name: 'Other Snacks (5Rs)', mrp: 5, ptr: 4.4, schemes: [{ qty: 480, discount: 0.045, text: '480pcs - 4.5%'}, { qty: 30, discount: 0.025, text: '30pcs - 2.5%' }], image: 'https://m.media-amazon.com/images/I/71Y+Afq82OL.jpg' },
+            { category: 'snacks', name: 'All Snacks (10Rs)', mrp: 10, ptr: 8.8, schemes: [{ qty: 150, discount: 0.11, text: '150pcs - 11%'}, { qty: 24, discount: 0.055, text: '24pcs - 5.5%' }], image: 'https://www.itcportal.com/brands-microsite/images/bingo/bingo-mad-angles-chaat-masti.png' },
+            { category: 'snacks', name: 'Mad Angles (20Rs)', mrp: 20, ptr: 17.6, schemes: [{ qty: 6, discount: 0.10, text: '6pcs - 10%'}], image: 'https://m.media-amazon.com/images/I/71tQ0gV3STL.jpg' },
+            { category: 'snacks', name: 'Large Snacks (30/50Rs)', mrp: 30, ptr: 26.4, schemes: [{ qty: 1, discount: 0.065, text: '1pc - 6.5%'}], image: 'https://m.media-amazon.com/images/I/71Y+Afq82OL.jpg' },
+            { category: 'snacks', name: 'Punjabi Tadka (5Rs)', mrp: 5, ptr: 4.4, schemes: [{ qty: 12, discount: 0.05, text: '12pcs - 5%'}], image: 'https://m.media-amazon.com/images/I/81I6oU07VQL.jpg' },
+
+            // Biscuits
+            { category: 'biscuits', name: 'Bounce (5Rs)', mrp: 5, ptr: 4.4, schemes: [{ qty: 144, discount: 0.04, text: '144pcs - 4%'}, { qty: 24, discount: 0.0275, text: '24pcs - 2.75%' }], image: 'https://m.media-amazon.com/images/I/81Mlt8jbQIL.jpg' },
+            { category: 'biscuits', name: 'Bounce (10Rs)', mrp: 10, ptr: 8.8, schemes: [{ qty: 48, discount: 0.035, text: '48pcs - 3.5%'}, { qty: 12, discount: 0.025, text: '12pcs - 2.5%' }], image: 'https://www.itcportal.com/brands-microsite/images/bounce/Day-Night.png' },
+            { category: 'biscuits', name: 'Bounce Double Cream', mrp: 10, ptr: 8.8, schemes: [{ qty: 144, discount: 0.0325, text: '144pcs - 3.25%'}, { qty: 24, discount: 0.015, text: '24pcs - 1.5%' }], image: 'https://www.sunfeastworld.com/images/bounch/Bounce-Double-Creme-Orange-product.png' },
+            { category: 'biscuits', name: 'Wowzers (5Rs)', mrp: 5, ptr: 4.4, schemes: [{ qty: 144, discount: 0.12, text: '1 CFC (144pcs) - 12%'}, { qty: 48, discount: 0.08, text: '48pcs - 8%'}, { qty: 24, discount: 0.06, text: '24pcs - 6%'}], image: 'https://www.adgully.com/img/800/202306/sunfeast-wowzers.jpeg.jpg' },
+            { category: 'biscuits', name: 'Dark Fantasy Yumfills Pie', mrp: 170, ptr: 76, schemes: [{ qty: 1, discount: 0.111, text: '1pc - 11.1%'}], image: 'https://m.media-amazon.com/images/I/61iR451OqgL.jpg' },
+            { category: 'biscuits', name: 'Dark Fantasy Chocofills (230g)', mrp: 170, ptr: 89, schemes: [{ qty: 10, discount: 0.05, text: '10 pcs - 5%' }], image: 'https://m.media-amazon.com/images/I/61zbfD8aJEL.jpg' },
+            { category: 'biscuits', name: 'Dark Fantasy Sandwich (Choco)', mrp: 100, ptr: 45, schemes: [{ qty: 12, discount: 0.04, text: '12pcs - 4%'}, {qty: 48, discount: 0.05, text: '48pcs - 5%'}], image: 'https://m.media-amazon.com/images/I/71oYwH5X-PL.jpg'},
+            { category: 'biscuits', name: 'Dark Fantasy Bourbon (465g)', mrp: 160, ptr: 71, schemes: [{ qty: 24, discount: 0.035, text: '24pcs - 3.5%'}, {qty: 60, discount: 0.055, text: '60pcs - 5.5%'}], image: 'https://m.media-amazon.com/images/I/61JWtD0iG4L.jpg' },
+            { category: 'biscuits', name: 'Mom\'s Magic CA (896g)', mrp: 290, ptr: 131, schemes: [{ qty: 6, discount: 0.005, text: '6pcs - 0.5%'}, {qty: 15, discount: 0.0325, text: '15pcs - 3.25%'}], image: 'https://m.media-amazon.com/images/I/71GpgS-mPCL.jpg' },
+            { category: 'biscuits', name: 'Marie Light (10Rs & above)', mrp: 10, ptr: 8.8, schemes: [{ qty: 24, discount: 0.025, text: '24pcs - 2.5%'}, { qty: 3, discount: 0.01, text: '3pcs - 1%' }], image: 'https://m.media-amazon.com/images/I/71xY6NAjDCL.jpg' },
+            { category: 'biscuits', name: 'Glucose (5Rs)', mrp: 5, ptr: 4.25, schemes: [{ qty: 144, discount: 0.09, text: '1 Case (144pcs) - 9%'}], image: 'https://m.media-amazon.com/images/I/8182YmqicwL.jpg' },
+            { category: 'biscuits', name: 'Farmlite Digestive (800g)', mrp: 240, ptr: 107, schemes: [{qty:1, discount: 0, text: 'No Scheme'}], image: 'https://m.media-amazon.com/images/I/618F2Yw+zIL.jpg'},
+
+            // Confectionery
+            { category: 'confectionery', name: 'Candyman Choco Almond (10Rs)', mrp: 10, ptr: 8.2, schemes: [ { qty: 240, flatOff: 100, text: '240pcs-Rs.100 OFF'}, { qty: 120, flatOff: 50, text: '120pcs-Rs.50 OFF'}, { qty: 72, discount: 0.105, text: '72pcs-10.5%'}, { qty: 24, discount: 0.06, text: '24pcs-6%'} ], image: 'https://m.media-amazon.com/images/I/61i-Q1yF-5L.jpg' },
+            { category: 'confectionery', name: 'Candyman Eclairs (Jar)', mrp: 1, ptr: 0.82, schemes: [{ qty: 420, discount: 0.0833, text: 'Jar (420pcs) - 8.33%'}], image: 'https://m.media-amazon.com/images/I/81b2P47Lw8L.jpg' },
+            { category: 'confectionery', name: 'Candyman Cofitino', mrp: 1, ptr: 0.82, schemes: [{ qty: 360, discount: 0.04, text: '360pcs - 4%'}, { qty: 240, discount: 0.03, text: '240pcs - 3%'}, { qty: 120, discount: 0.02, text: '120pcs - 2%'}], image: 'https://m.media-amazon.com/images/I/81k3vNLDpIL.jpg' },
+
+            // Juice
+            { category: 'juice', name: 'B Natural Juice 125ml', mrp: 10, ptr: 8.04, schemes: [{ qty: 500, discount: 0.125, text: '25 cfc (500 units) - 12.5%'}, { qty: 100, discount: 0.0625, text: '5 cfc (100 units) - 6.25%'}], image: 'https://m.media-amazon.com/images/I/6135UpM2s+L.jpg' },
+
+            // Staples
+            { category: 'staples', name: 'Aashirvaad Chakki Atta 10kg', mrp: 542, ptr: 457.96, schemes: [{ qty: 3, discount: 0.013, text: '1 CFC (3 bags) - 1.3%' }], image: 'https://m.media-amazon.com/images/I/61b7J6L2iDL.jpg' },
+            { category: 'staples', name: 'Aashirvaad Select Atta 5kg', mrp: 283, ptr: 254.7, schemes: [{ qty: 1, discount: 0, text: 'No Scheme' }], image: 'https://m.media-amazon.com/images/I/81O-a8p2u+L.jpg' },
+            { category: 'staples', name: 'Aashirvaad Besan 10kg', mrp: 540, ptr: 470, schemes: [ { qty: 15, flatOff: 900, text: '15 Bags - Rs.900 off'}, { qty: 8, flatOff: 300, text: '8 Bags - Rs.300 off'}, { qty: 4, flatOff: 100, text: '4 Bags - Rs.100 off'}], image: 'https://www.jiomart.com/images/product/original/490832962/aashirvaad-besan-1-kg-product-images-o490832962-p490832962-0-202203170208.jpg' }
+        ];
+
+        const posterCards = [
+            { title: "Snacks Super Savers", scheme: "Up to 11% OFF!", image: "https://www.itcportal.com/brands-microsite/images/bingo/bingo-mad-angles-chaat-masti.png", category: "snacks", color: "red-500" },
+            { title: "Delicious Biscuit Deals", scheme: "Up to 12% OFF on Wowzers!", image: "https://www.adgully.com/img/800/202306/sunfeast-wowzers.jpeg.jpg", category: "biscuits", color: "blue-500" },
+            { title: "Sweet Confectionery Offers", scheme: "Up to Rs. 100 OFF!", image: "https://m.media-amazon.com/images/I/61i-Q1yF-5L.jpg", category: "confectionery", color: "orange-500" },
+            { title: "Refreshing Juice Offers", scheme: "Up to 12.5% OFF!", image: "https://m.media-amazon.com/images/I/6135UpM2s+L.jpg", category: "juice", color: "purple-500" },
+            { title: "Staples Stock-Up", scheme: "Up to Rs. 900 OFF on Besan!", image: "https://www.jiomart.com/images/product/original/490832962/aashirvaad-besan-1-kg-product-images-o490832962-p490832962-0-202203170208.jpg", category: "staples", color: "green-500" }
+        ];
+
+        // DOM elements
+        const tabContentContainer = document.getElementById('tab-content');
+        const categories = ['snacks', 'biscuits', 'confectionery', 'juice', 'staples'];
+        const modal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        
+        // Functions
+        function createTableForCategory(category) {
+            const unitLabel = (category === 'staples' || category === 'juice') ? 'Units' : 'Pcs';
+            return `<div id="${category}-content" class="tab-pane hidden"><div class="overflow-x-auto"><table class="min-w-full"><thead class="table-header"><tr><th class="table-cell rounded-tl-lg">Product</th><th class="table-cell">MRP (₹)</th><th class="table-cell">PTR (₹)</th><th class="table-cell">Image</th><th class="table-cell">Enter Quantity (${unitLabel})</th><th class="table-cell">Scheme Details</th><th class="table-cell">Final Cost (₹)</th><th class="table-cell rounded-tr-lg">Retailer Margin</th></tr></thead><tbody id="${category}-table-body"></tbody></table></div></div>`;
+        }
+
+        function calculateScheme(product, quantity) {
+            let finalCost = product.ptr * quantity;
+            let totalMrp = product.mrp * quantity;
+            let schemeText = 'No scheme applied';
+
+            if (quantity > 0) {
+                const applicableSchemes = product.schemes.filter(s => quantity >= s.qty).sort((a, b) => b.qty - a.qty);
+                if (applicableSchemes.length > 0) {
+                    const bestScheme = applicableSchemes[0];
+                    schemeText = bestScheme.text;
+                    if (bestScheme.discount) finalCost *= (1 - bestScheme.discount);
+                    else if (bestScheme.flatOff) finalCost -= bestScheme.flatOff;
+                }
+            } else {
+                finalCost = 0;
+            }
+            const marginAmount = totalMrp - finalCost;
+            const marginPercentage = totalMrp > 0 ? (marginAmount / totalMrp) * 100 : 0;
+            return { schemeText, finalCost: finalCost > 0 ? finalCost.toFixed(2) : '0.00', margin: marginAmount > 0 ? `${marginAmount.toFixed(2)} (${marginPercentage.toFixed(2)}%)` : '0.00 (0.00%)' };
+        }
+
+        function renderTable(category) {
+            const tableBody = document.getElementById(`${category}-table-body`);
+            if (!tableBody) return;
+            tableBody.innerHTML = products.filter(p => p.category === category).map((product, index) => `
+                <tr class="table-row" id="${category}-row-${index}">
+                    <td class="table-cell font-semibold">${product.name}</td>
+                    <td class="table-cell">${product.mrp.toFixed(2)}</td>
+                    <td class="table-cell">${product.ptr.toFixed(2)}</td>
+                    <td class="table-cell"><button class="view-image-btn" data-img-src="${product.image}">View</button></td>
+                    <td class="table-cell"><input type="number" min="0" class="input-quantity" data-product-index="${index}" data-category="${category}" placeholder="0"></td>
+                    <td class="table-cell text-sm text-blue-600 font-medium" id="scheme-${category}-${index}">-</td>
+                    <td class="table-cell calculated-value" id="cost-${category}-${index}">0.00</td>
+                    <td class="table-cell calculated-value text-green-600" id="margin-${category}-${index}">0.00 (0.00%)</td>
+                </tr>`).join('');
+        }
+        
+        function renderPoster() {
+            const posterContainer = document.querySelector('#poster-view .grid');
+            posterContainer.innerHTML = posterCards.map(card => `
+                <div class="poster-card">
+                    <img src="${card.image}" alt="${card.title}" class="poster-card-img" onerror="this.onerror=null;this.src='${placeholderImg}';">
+                    <div class="poster-card-content">
+                        <h3 class="poster-card-title text-${card.color}">${card.title}</h3>
+                        <p class="poster-card-scheme text-gray-700">${card.scheme}</p>
+                        <button class="poster-card-cta bg-${card.color} text-white" data-category="${card.category}">Calculate Now</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchView(view) {
+            document.getElementById('poster-view').classList.toggle('hidden', view !== 'poster');
+            document.getElementById('calculator-view').classList.toggle('hidden', view !== 'calculator');
+            document.getElementById('poster-view-btn').classList.toggle('active', view === 'poster');
+            document.getElementById('calculator-view-btn').classList.toggle('active', view === 'calculator');
+        }
+
+        // Event Listeners Setup
+        function setupEventListeners() {
+            document.body.addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-image-btn')) {
+                    modalImage.src = e.target.dataset.imgSrc;
+                    modal.classList.add('visible');
+                }
+                if (e.target.id === 'modal-close-button' || e.target === modal) {
+                    modal.classList.remove('visible');
+                }
+                if (e.target.classList.contains('poster-card-cta')) {
+                    const category = e.target.dataset.category;
+                    switchView('calculator');
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('tab-active'));
+                    document.getElementById(`${category}-tab`).classList.add('tab-active');
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+                    document.getElementById(`${category}-content`).classList.remove('hidden');
+                }
+                if(e.target.id === 'poster-view-btn') switchView('poster');
+                if(e.target.id === 'calculator-view-btn') switchView('calculator');
+                if(e.target.classList.contains('tab-item')) {
+                    e.preventDefault();
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('tab-active'));
+                    e.target.classList.add('tab-active');
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+                    document.getElementById(`${e.target.dataset.tab}-content`).classList.remove('hidden');
+                }
+            });
+
+            document.body.addEventListener('input', (e) => {
+                if (e.target.classList.contains('input-quantity')) {
+                    const input = e.target;
+                    const product = products.filter(p => p.category === input.dataset.category)[input.dataset.productIndex];
+                    const result = calculateScheme(product, parseInt(input.value) || 0);
+                    document.getElementById(`scheme-${input.dataset.category}-${input.dataset.productIndex}`).textContent = result.schemeText;
+                    document.getElementById(`cost-${input.dataset.category}-${input.dataset.productIndex}`).textContent = result.finalCost;
+                    document.getElementById(`margin-${input.dataset.category}-${input.dataset.productIndex}`).textContent = result.margin;
+                }
+            });
+        }
+        
+        // Initial page setup
+        tabContentContainer.innerHTML = categories.map(createTableForCategory).join('');
+        document.getElementById('snacks-content').classList.remove('hidden');
+        categories.forEach(renderTable);
+        renderPoster();
+        setupEventListeners();
+    });
+    </script>
+</body>
+</html>

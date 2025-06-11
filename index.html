@@ -89,6 +89,15 @@
         .calculated-value { font-weight: 600; }
         .hidden { display: none; }
         .main-header { background: linear-gradient(to right, #4f46e5, #9333ea); padding: 2rem 1rem; border-radius: 1rem; color: white; margin-bottom: 2rem; }
+        
+        .scheme-info-row td {
+            background-color: #f8f9fa;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
         .image-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
         .image-modal-overlay.visible { opacity: 1; pointer-events: auto; }
         .image-modal-content { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); text-align: center; position: relative; transform: scale(0.95); transition: transform 0.3s ease; }
@@ -205,7 +214,7 @@
         // Functions
         function createTableForCategory(category) {
             const unitLabel = (category === 'staples' || category === 'juice') ? 'Units' : 'Pcs';
-            return `<div id="${category}-content" class="tab-pane hidden"><div class="overflow-x-auto"><table class="min-w-full"><thead class="table-header"><tr><th class="table-cell rounded-tl-lg">Product</th><th class="table-cell">MRP (₹)</th><th class="table-cell">PTR (₹)</th><th class="table-cell">Image</th><th class="table-cell">Enter Quantity (${unitLabel})</th><th class="table-cell">Scheme Details</th><th class="table-cell">Final Cost (₹)</th><th class="table-cell rounded-tr-lg">Retailer Margin</th></tr></thead><tbody id="${category}-table-body"></tbody></table></div></div>`;
+            return `<div id="${category}-content" class="tab-pane hidden"><div class="overflow-x-auto"><table class="min-w-full"><thead class="table-header"><tr><th class="table-cell rounded-tl-lg">Product</th><th class="table-cell">MRP (₹)</th><th class="table-cell">PTR (₹)</th><th class="table-cell">Image</th><th class="table-cell">Enter Quantity (${unitLabel})</th><th class="table-cell">Applied Scheme</th><th class="table-cell">Final Cost (₹)</th><th class="table-cell rounded-tr-lg">Retailer Margin</th></tr></thead><tbody id="${category}-table-body"></tbody></table></div></div>`;
         }
 
         function calculateScheme(product, quantity) {
@@ -232,17 +241,33 @@
         function renderTable(category) {
             const tableBody = document.getElementById(`${category}-table-body`);
             if (!tableBody) return;
-            tableBody.innerHTML = products.filter(p => p.category === category).map((product, index) => `
-                <tr class="table-row" id="${category}-row-${index}">
-                    <td class="table-cell font-semibold">${product.name}</td>
-                    <td class="table-cell">${product.mrp.toFixed(2)}</td>
-                    <td class="table-cell">${product.ptr.toFixed(2)}</td>
-                    <td class="table-cell"><button class="view-image-btn" data-img-src="${product.image}">View</button></td>
-                    <td class="table-cell"><input type="number" min="0" class="input-quantity" data-product-index="${index}" data-category="${category}" placeholder="0"></td>
-                    <td class="table-cell text-sm text-blue-600 font-medium" id="scheme-${category}-${index}">-</td>
-                    <td class="table-cell calculated-value" id="cost-${category}-${index}">0.00</td>
-                    <td class="table-cell calculated-value text-green-600" id="margin-${category}-${index}">0.00 (0.00%)</td>
-                </tr>`).join('');
+            let tableHTML = '';
+            products.filter(p => p.category === category).forEach((product, index) => {
+                tableHTML += `
+                    <tr class="table-row" id="${category}-row-${index}">
+                        <td class="table-cell font-semibold">${product.name}</td>
+                        <td class="table-cell">${product.mrp.toFixed(2)}</td>
+                        <td class="table-cell">${product.ptr.toFixed(2)}</td>
+                        <td class="table-cell"><button class="view-image-btn" data-img-src="${product.image}">View</button></td>
+                        <td class="table-cell"><input type="number" min="0" class="input-quantity" data-product-index="${index}" data-category="${category}" placeholder="0"></td>
+                        <td class="table-cell text-sm text-blue-600 font-medium" id="scheme-${category}-${index}">-</td>
+                        <td class="table-cell calculated-value" id="cost-${category}-${index}">0.00</td>
+                        <td class="table-cell calculated-value text-green-600" id="margin-${category}-${index}">0.00 (0.00%)</td>
+                    </tr>
+                `;
+                // Add the new scheme details row
+                if (product.schemes && product.schemes.length > 0 && !(product.schemes.length === 1 && product.schemes[0].text === 'No Scheme')) {
+                    const allSchemesText = product.schemes.map(s => s.text).join(' | ');
+                    tableHTML += `
+                        <tr class="scheme-info-row">
+                            <td colspan="8">
+                                <strong>Available Schemes:</strong> ${allSchemesText}
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+            tableBody.innerHTML = tableHTML;
         }
         
         function renderPoster() {
@@ -316,4 +341,4 @@
     });
     </script>
 </body>
-</html>
+</ht
